@@ -3,13 +3,13 @@ var today = new Date();
 const request = require('request')
 const dotenv = require('dotenv').config()
 var axios = require('axios');
-const readline=require('readline');
+const readline = require('readline');
+const colors = require('colors')
 const weather_url = `https://api.openweathermap.org/data/2.5/weather?q=Nashville&units=imperial&appid=${process.env.WEATHER_KEY}`
-var config = {
-    method: 'get',
-    url: `https://maps.googleapis.com/maps/api/distancematrix/json?origins=4710+dakota+ave&destinations=${process.argv[2]}&units=imperial&key=${process.env.MAPS_KEY}`,
-    headers: {}
-};
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 
 var date = (today.getMonth() + 1) + '/' + today.getDate() + '/' + today.getFullYear();
 
@@ -30,27 +30,55 @@ request(weather_url, (error, response, body) => {
     if (today.getHours() < 12) {
         console.log("Good mourning, It is currently " + date + " And " + temp + " Degrees outside!");
     }
-    axios(config)
-        .then(function(response) {
-            var a = (JSON.stringify(response.data.rows));
-            const Directions = a.slice(35, 41);
 
-            inquirer
-                .prompt([{
-                    name: "channels",
-                    message: "What could I help you with?",
-                    choices: [{ name: "Investigation Discovery", value: 0 }, { name: "CNN", value: 1 }, { name: "Fox News", value: 2 }, { name: "TLC", value: 3 }]
-                }])
-                .then((responses) => {
-                    if (responses.channels === 'Good Mourning') {
-                        console.log("Good mourning, It is currently " + date + " And " + temp + " Degrees outside!");
-                    } else if (responses.channels === 'Hows the weather') {
-                        console.log('Right now it is ' + temp + ' Degrees outside but it feels like ' + data.main.feels_like + ' The skys are mostly ' + data.weather.main);
-                    } else if (responses.channels.startsWith('How far away is')) {
-                        console.log(process.argv);
-                    } else {
-                        console.log(Responses[Response]);
-                    }
-                });
-        })
+    rl.question('What could I help you with? '.blue, value => {
+        const Location = value.slice(16)
+        const location2 = value.slice(33)
+        var config = {
+            method: 'get',
+            url: `https://maps.googleapis.com/maps/api/distancematrix/json?origins=4710+dakota+ave&destinations=${Location}&units=imperial&key=${process.env.MAPS_KEY}`,
+            headers: {}
+        };
+        var config2 = {
+            method: 'get',
+            url: `https://maps.googleapis.com/maps/api/distancematrix/json?origins=4710+dakota+ave&destinations=${location2}&units=imperial&key=${process.env.MAPS_KEY}`,
+            headers: {}
+        };
+        axios(config)
+            .then(function(response) {
+                var a = (JSON.stringify(response.data.rows));
+                const Length = a.slice(35, 41);
+                const Time = a.slice(79, 94);
+
+                if (value.startsWith('How far away is ')) {
+                    console.log(Location + ' is '.green + Length + ' Away.'.green)
+                }
+                rl.close()
+            });
+        axios(config2)
+            .then(function(response) {
+                var a = (JSON.stringify(response.data.rows));
+                const Length = a.slice(35, 41);
+                const Time = a.slice(79, 94);
+
+                if (value.startsWith('How long would it take to get to ')) {
+                    console.log(location2 + ' is '.green + Time + ' Away.'.green)
+                    rl.close()
+                };
+            })
+        if (value === 'Good Mourning') {
+            console.log("Good mourning, It is currently ".green + date + " And ".green + temp + " Degrees outside!".green);
+        } else if (value === 'Hows the weather') {
+            console.log('Right now it is '.green + temp + ' Degrees outside but it feels like '.green + data.main.feels_like + ' The skys are mostly '.green + data.weather.main);
+        } else if (value.startsWith('Test')) {
+            console.log(Test)
+        } else if (value.startsWith('How far away is')) {
+            return
+        } else if (value.startsWith('How long would it take to get to ')) {
+            return
+        } else {
+            console.log(Responses[Response]);
+        }
+        rl.close()
+    });
 })
