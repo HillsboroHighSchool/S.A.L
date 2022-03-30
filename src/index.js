@@ -4,7 +4,8 @@ const request = require('request')
 const dotenv = require('dotenv').config()
 var axios = require('axios');
 const readline = require('readline');
-const colors = require('colors')
+const colors = require('colors');
+const { Console } = require("console");
 const weather_url = `https://api.openweathermap.org/data/2.5/weather?q=Nashville&units=imperial&appid=${process.env.WEATHER_KEY}`
 const rl = readline.createInterface({
     input: process.stdin,
@@ -28,7 +29,7 @@ request(weather_url, (error, response, body) => {
     const temp = data.main.temp
 
     if (today.getHours() < 12) {
-        console.log("Good mourning, It is currently " + date + " And " + temp + " Degrees outside!");
+        console.log("Good mourning, It is currently " + date + ", Its " + temp + " Degrees outside.");
     }
 
     rl.question('What could I help you with? '.blue, value => {
@@ -44,6 +45,7 @@ request(weather_url, (error, response, body) => {
             url: `https://maps.googleapis.com/maps/api/distancematrix/json?origins=4710+dakota+ave&destinations=${location2}&units=imperial&key=${process.env.MAPS_KEY}`,
             headers: {}
         };
+
         axios(config)
             .then(function(response) {
                 var a = (JSON.stringify(response.data.rows));
@@ -66,16 +68,19 @@ request(weather_url, (error, response, body) => {
                     rl.close()
                 };
             })
+
         if (value === 'Good Mourning') {
             console.log("Good mourning, It is currently ".green + date + " And ".green + temp + " Degrees outside!".green);
         } else if (value === 'Hows the weather') {
-            console.log('Right now it is '.green + temp + ' Degrees outside but it feels like '.green + data.main.feels_like + ' The skys are mostly '.green + data.weather.main);
+            console.log('Right now it is '.green + temp + ' Degrees outside but it feels like '.green + data.main.feels_like);
         } else if (value.startsWith('Test')) {
             console.log(Test)
         } else if (value.startsWith('How far away is')) {
             return
         } else if (value.startsWith('How long would it take to get to ')) {
             return
+        } else if (value.startsWith('Hey', 'Hi')) {
+            console.log('Hello Wolfgang, I am here and ready to help you.'.green)
         } else {
             console.log(Responses[Response]);
         }
